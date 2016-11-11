@@ -67,7 +67,7 @@
      (if (string-match
           (concat "^\\*" buffer-name-template "\\(-[0-9]+\\)?" "\\*$" )
           (buffer-name buf))
-         (write-data (get-buffer (buffer-name buf)))))
+         (write-data buf)))
    (buffer-list)))
 
 :autoload
