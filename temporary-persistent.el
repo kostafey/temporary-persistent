@@ -6,7 +6,7 @@
 ;; URL: https://github.com/kostafey/temporary-persistent
 ;; Keywords: temp, buffers, notes
 ;; Version: 0.1
-;; Package-Requires: ((emacs "24.3") (names "20151201.0") (dash "2.12.1"))
+;; Package-Requires: ((emacs "24.3") (names "20151201.0") (dash "2.12.1") (s "1.10.0"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -23,6 +23,9 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+(require 's)
+(require 'dash)
+(require 'names)
 
 (define-namespace temporary-persistent-
 
@@ -37,16 +40,21 @@
 (defcustom buffer-name-template "temp"
   "Template for temporary buffers names.")
 
+(defun get-buffer-file-name (&optional buf)
+  (s-chop-prefixes
+   '("*") (s-chop-suffixes
+           '("*") (buffer-name buf))))
+
 (defun write-data (buf)
   (unless (file-exists-p store-folder)
     (make-directory store-folder))
   (with-current-buffer buf
     (write-region
      (buffer-substring 1 (point-max)) nil
-     (expand-file-name buf store-folder))))
+     (expand-file-name (get-buffer-file-name buf) store-folder))))
 
 (defun prepare-kill-buffer ()
-  (write-data (buffer-name))
+  (write-data (current-buffer))
   (set (make-local-variable 'kill-buffer-query-functions) nil)
   (kill-buffer (current-buffer)))
 
@@ -54,27 +62,29 @@
   (-map
    (lambda (buf)
      (if (string-match
-          (concat "^" buffer-name-template "\\(-[0-9]+\\)?" "$" )
+          (concat "^\\*" buffer-name-template "\\(-[0-9]+\\)?" "\\*$" )
           (buffer-name buf))
-         (write-data (buffer-name buf))))
+         (write-data (get-buffer (buffer-name buf)))))
    (buffer-list)))
 
 :autoload
 (defun switch-buffer (&optional num)
   "Swithes to temp buffer."
   (interactive "P")
-  (let ((temp-buffer-name (if (and num (numberp num))
-                              (concat buffer-name-template
-                                      "-"
-                                      (int-to-string num))
-                            buffer-name-template)))
+  (let* ((temp-file-name (if (and num (numberp num))
+                             (concat buffer-name-template
+                                     "-"
+                                     (int-to-string num))
+                           buffer-name-template))
+         (temp-buffer-name (concat "*" temp-file-name "*")
+                           buffer-name-template))
     (if (not (get-buffer temp-buffer-name))
         (progn
           (switch-to-buffer temp-buffer-name)
           (-map (lambda (mode)
                   (funcall mode t))
                 default-submodes)
-          (let ((storage-file (expand-file-name temp-buffer-name store-folder)))
+          (let ((storage-file (expand-file-name temp-file-name store-folder)))
             (if (file-exists-p storage-file)
                 (insert-file-contents storage-file))))
       (switch-to-buffer temp-buffer-name))
