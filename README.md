@@ -26,7 +26,7 @@ Then you can install popup-switcher with the following command:
 
 ## Configuration
 
-### Keybindings
+### Switch to temp buffer keybinding
 
 The only usefull function you should bind to customize this package is
 `temporary-persistent-switch-buffer`.
@@ -40,14 +40,28 @@ As for me, I'm rarely close my Emacs, so I dislike to waste handy
 Then, when you press <kbd>C-x C-c</kbd>, `*temp*` buffer will be created.
 When you press <kbd>M-1 C-x C-c</kbd>, `*temp-1*` buffer will be created and so on.
 
+### Save buffer keybinding
+
+Thre is 3 cases Emacs save your temp buffer:
+
+* `kill-buffer`
+* `kill-emacs`
+* Save buffer manually by prefered keybinding:
+
+```lisp
+(setq 'temporary-persistent-save-key "C-x C-s")
+```
+
+<kbd>C-x C-s</kbd> is used by default. You can set any key you like.
+
 ### Default submodes
 
 You can enable some submodes for new temp buffers by default:
 
 ```lisp
-(setq 'temporary-persistent-default-submodes (list 'linum-mode
-                                                   'auto-fill-mode
-                                                   'auto-complete-mode))
+(setq temporary-persistent-default-submodes (list 'linum-mode
+                                                  'auto-fill-mode
+                                                  'auto-complete-mode))
 ```
 
 ### Directory to keep temporary buffers data
@@ -55,7 +69,7 @@ You can enable some submodes for new temp buffers by default:
 Change folder to keep temporary buffers data if you like:
 
 ```lisp
-(setq 'temporary-persistent-store-folder "~/temp")
+(setq temporary-persistent-store-folder "~/temp")
 ```
 
 ### Buffer name template
