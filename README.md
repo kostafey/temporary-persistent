@@ -52,7 +52,7 @@ Thre is 3 cases Emacs save your temp buffer:
 (setq 'temporary-persistent-save-key "C-x C-s")
 ```
 
-<kbd>C-x C-s</kbd> is used by default. You can set any key you like.
+<kbd>C-x C-s</kbd> is used by default.
 
 ### Default submodes
 
