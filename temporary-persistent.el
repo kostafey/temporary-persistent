@@ -40,6 +40,9 @@
 (defcustom buffer-name-template "temp"
   "Template for temporary buffers names.")
 
+(defcustom save-key "C-x C-s"
+  "Save buffer keybinding.")
+
 (defun get-buffer-file-name (&optional buf)
   (s-chop-prefixes
    '("*") (s-chop-suffixes
@@ -89,7 +92,10 @@
                 (insert-file-contents storage-file))))
       (switch-to-buffer temp-buffer-name))
     (set (make-local-variable 'kill-buffer-query-functions)
-         'temporary-persistent-prepare-kill-buffer)))
+         'temporary-persistent-prepare-kill-buffer)
+    (local-set-key (kbd save-key)
+                   '(lambda () (interactive)
+                      (temporary-persistent-write-data (current-buffer))))))
 )
 
 (add-hook 'kill-emacs-hook 'temporary-persistent-save-all-related-buffers)
