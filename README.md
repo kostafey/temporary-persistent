@@ -7,6 +7,8 @@ temporary-persistent - easy way to switch temp buffers and keep them persistent.
 When you open your temp buffer you don't need to save it manually,
 it'll be saved automatically any time you kill this buffer or Emacs.
 
+See also: [persistent-scratch](https://github.com/Fanael/persistent-scratch)
+
 ## Installation
 
 Add MELPA (if not yet) to your `package-archives` list:
@@ -35,8 +37,8 @@ As for me, I'm rarely close my Emacs, so I dislike to waste handy
 (global-set-key (kbd "C-x C-c") 'temporary-persistent-switch-buffer)
 ```
 
-Then, when you press <kbd>C-x C-c</kbd>, `temp` buffer will be created.
-When you press <kbd>M-1 C-x C-c</kbd>, `temp-1` buffer will be created and so on.
+Then, when you press <kbd>C-x C-c</kbd>, `*temp*` buffer will be created.
+When you press <kbd>M-1 C-x C-c</kbd>, `*temp-1*` buffer will be created and so on.
 
 ### Default submodes
 
@@ -69,6 +71,7 @@ You can also change template for temporary buffer names:
 * [GNU Emacs](http://www.gnu.org/software/emacs/emacs.html) 24.
 * [names](https://github.com/Malabarba/names).
 * [dash.el](https://github.com/magnars/dash.el).
+* [s.el](https://github.com/magnars/s.el).
 
 ## License
 
