@@ -20,7 +20,7 @@ Add MELPA (if not yet) to your `package-archives` list:
 (package-initialize)
 ```
 
-Then you can install popup-switcher with the following command:
+Then you can install temporary-persistent with the following command:
 
 <kbd>M-x package-install [RET] temporary-persistent [RET]</kbd>
 
