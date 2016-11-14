@@ -42,7 +42,7 @@ When you press <kbd>M-1 C-x C-c</kbd>, `*temp-1*` buffer will be created and so 
 
 ### Save buffer keybinding
 
-Thre is 3 cases Emacs save your temp buffer:
+There are 3 cases Emacs save your temp buffer:
 
 * `kill-buffer`
 * `kill-emacs`
