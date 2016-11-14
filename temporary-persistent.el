@@ -56,7 +56,7 @@
      (buffer-substring 1 (point-max)) nil
      (expand-file-name (get-buffer-file-name buf) store-folder))))
 
-(defun prepare-kill-buffer ()
+(defun save-and-kill-buffer ()
   (write-data (current-buffer))
   (set (make-local-variable 'kill-buffer-query-functions) nil)
   (kill-buffer (current-buffer)))
@@ -72,7 +72,7 @@
 
 :autoload
 (defun switch-buffer (&optional num)
-  "Swithes to temp buffer."
+  "Switch to temp buffer."
   (interactive "P")
   (let* ((temp-file-name (if (and num (numberp num))
                              (concat buffer-name-template
@@ -92,7 +92,7 @@
                 (insert-file-contents storage-file))))
       (switch-to-buffer temp-buffer-name))
     (set (make-local-variable 'kill-buffer-query-functions)
-         'temporary-persistent-prepare-kill-buffer)
+         'temporary-persistent-save-and-kill-buffer)
     (local-set-key (kbd save-key)
                    '(lambda () (interactive)
                       (temporary-persistent-write-data (current-buffer))))))
