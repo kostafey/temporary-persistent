@@ -27,6 +27,10 @@
 (require 'dash)
 (require 'names)
 
+(defgroup temporary-persistent nil
+  "Keep temp notes buffers persistent."
+  :group 'convenience)
+
 (define-namespace temporary-persistent-
 
 (defcustom default-submodes (list 'linum-mode
@@ -35,13 +39,19 @@
   "List of submodes enabled in new temp buffer.")
 
 (defcustom store-folder "~/temp"
-  "Directory to keep files with temporary buffers content.")
+  "Directory to keep files with temporary buffers content."
+  :type 'string
+  :group 'temporary-persistent)
 
 (defcustom buffer-name-template "temp"
-  "Template for temporary buffers names.")
+  "Template for temporary buffers names."
+  :type 'string
+  :group 'temporary-persistent)
 
 (defcustom save-key "C-x C-s"
-  "Save buffer keybinding.")
+  "Save buffer keybinding."
+  :type 'string
+  :group 'temporary-persistent)
 
 (defun get-buffer-file-name (&optional buf)
   (s-chop-prefixes
