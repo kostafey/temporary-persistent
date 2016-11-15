@@ -49,7 +49,7 @@ There are 3 cases Emacs save your temp buffer:
 * Save buffer manually by prefered keybinding:
 
 ```lisp
-(setq 'temporary-persistent-save-key "C-x C-s")
+(setq temporary-persistent-save-key "C-x C-s")
 ```
 
 <kbd>C-x C-s</kbd> is used by default.
