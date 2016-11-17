@@ -54,11 +54,13 @@
   :group 'temporary-persistent)
 
 (defun get-buffer-file-name (&optional buf)
+  "Clean '*temp-n*' buffer name BUF to 'temp-n' file name."
   (s-chop-prefixes
    '("*") (s-chop-suffixes
            '("*") (buffer-name buf))))
 
 (defun write-data (buf)
+  "Save buffer contents to file."
   (unless (file-exists-p store-folder)
     (make-directory store-folder))
   (with-current-buffer buf
@@ -67,11 +69,13 @@
      (expand-file-name (get-buffer-file-name buf) store-folder))))
 
 (defun save-and-kill-buffer ()
+  "Save buffer contents and kill buffer."
   (write-data (current-buffer))
   (set (make-local-variable 'kill-buffer-query-functions) nil)
   (kill-buffer (current-buffer)))
 
 (defun save-all-related-buffers ()
+  "Save all buffers corresponding to `buffer-name-template'."
   (-map
    (lambda (buf)
      (if (string-match
