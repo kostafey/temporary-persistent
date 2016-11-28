@@ -23,6 +23,16 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+;;; Commentary:
+
+;; temporary-persistent.el -  easy way to switch temp buffers and keep them
+;; persistent. It provides `temporary-persistent-switch-buffer' function
+;; to create temporary buffers named *temp*, *temp-1* and so on, witch is
+;; associated to files and will be saved any time you run `kill-buffer'
+;; `kill-emacs'.
+;; Furtermore, you can save them manually any time via `save-buffer' function.
+;; See README.md for more information.
+
 (require 's)
 (require 'dash)
 (require 'names)
@@ -48,29 +58,9 @@
   :type 'string
   :group 'temporary-persistent)
 
-(defcustom save-key "C-x C-s"
-  "Save buffer keybinding."
-  :type 'string
-  :group 'temporary-persistent)
-
-(defun get-buffer-file-name (&optional buf)
-  "Clean '*temp-n*' buffer name BUF to 'temp-n' file name."
-  (s-chop-prefixes
-   '("*") (s-chop-suffixes
-           '("*") (buffer-name buf))))
-
-(defun write-data (buf)
-  "Save buffer contents to file."
-  (unless (file-exists-p store-folder)
-    (make-directory store-folder))
-  (with-current-buffer buf
-    (write-region
-     (buffer-substring 1 (point-max)) nil
-     (expand-file-name (get-buffer-file-name buf) store-folder))))
-
 (defun save-and-kill-buffer ()
   "Save buffer contents and kill buffer."
-  (write-data (current-buffer))
+  (save-buffer)
   (set (make-local-variable 'kill-buffer-query-functions) nil)
   (kill-buffer (current-buffer)))
 
@@ -81,7 +71,7 @@
      (if (string-match
           (concat "^\\*" buffer-name-template "\\(-[0-9]+\\)?" "\\*$" )
           (buffer-name buf))
-         (write-data buf)))
+         (save-buffer buf)))
    (buffer-list)))
 
 :autoload
@@ -93,23 +83,22 @@
                                      "-"
                                      (int-to-string num))
                            buffer-name-template))
+         (temp-file-path (progn
+                           (unless (file-exists-p store-folder)
+                             (make-directory store-folder))
+                           (expand-file-name temp-file-name store-folder)))
          (temp-buffer-name (concat "*" temp-file-name "*")
                            buffer-name-template))
     (if (not (get-buffer temp-buffer-name))
         (progn
-          (switch-to-buffer temp-buffer-name)
+          (find-file temp-file-path)
+          (rename-buffer temp-buffer-name)
           (-map (lambda (mode)
                   (funcall mode t))
-                default-submodes)
-          (let ((storage-file (expand-file-name temp-file-name store-folder)))
-            (if (file-exists-p storage-file)
-                (insert-file-contents storage-file))))
+                default-submodes))
       (switch-to-buffer temp-buffer-name))
     (set (make-local-variable 'kill-buffer-query-functions)
-         'temporary-persistent-save-and-kill-buffer)
-    (local-set-key (kbd save-key)
-                   '(lambda () (interactive)
-                      (temporary-persistent-write-data (current-buffer))))))
+         'temporary-persistent-save-and-kill-buffer)))
 )
 
 (add-hook 'kill-emacs-hook 'temporary-persistent-save-all-related-buffers)
