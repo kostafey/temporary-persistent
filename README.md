@@ -4,7 +4,7 @@
 
 temporary-persistent - easy way to switch temp buffers and keep them persistent.
 
-When you open your temp buffer you don't need to save it manually,
+When you open a temp buffer you don't need to save it manually,
 it'll be saved automatically any time you kill this buffer or Emacs.
 
 See also: [persistent-scratch](https://github.com/Fanael/persistent-scratch)
