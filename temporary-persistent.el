@@ -85,7 +85,7 @@
                            buffer-name-template))
          (temp-file-path (progn
                            (unless (file-exists-p store-folder)
-                             (make-directory store-folder))
+                             (make-directory store-folder t))
                            (expand-file-name temp-file-name store-folder)))
          (temp-buffer-name (concat "*" temp-file-name "*")
                            buffer-name-template))
