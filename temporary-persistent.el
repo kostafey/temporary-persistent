@@ -33,6 +33,8 @@
 ;; Furtermore, you can save them manually any time via `save-buffer' function.
 ;; See README.md for more information.
 
+;;; Code:
+
 (require 's)
 (require 'dash)
 (require 'names)
