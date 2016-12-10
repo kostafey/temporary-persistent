@@ -38,7 +38,7 @@ There are 3 cases Emacs save your temp buffer:
 
 * `kill-buffer`
 * `kill-emacs`
-* Save buffer manually via odinary `save-buffer` function.
+* Save buffer manually via ordinary `save-buffer` function.
 
 ### Default submodes
 
