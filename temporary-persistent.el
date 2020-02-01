@@ -1,4 +1,4 @@
-;;; temporary-persistent.el --- Keep temp notes buffers persistent -*- lexical-binding: t
+;;; temporary-persistent.el --- Keep temp notes buffers persistent -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2016 Kostafey <kostafey@gmail.com>
 
