@@ -1,6 +1,6 @@
 ;;; temporary-persistent.el --- Keep temp notes buffers persistent -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2016 Kostafey <kostafey@gmail.com>
+;; Copyright (C) 2016-2023 Kostafey <kostafey@gmail.com>
 
 ;; Author: Kostafey <kostafey@gmail.com>
 ;; URL: https://github.com/kostafey/temporary-persistent
@@ -45,10 +45,11 @@
 
 (define-namespace temporary-persistent-
 
-(defcustom default-submodes (list 'linum-mode
-                                  'auto-fill-mode
+(defcustom default-submodes (list 'auto-fill-mode
                                   'auto-complete-mode)
-  "List of submodes enabled in new temp buffer.")
+  "List of submodes enabled in new temp buffer."
+  :type 'list
+  :group 'temporary-persistent)
 
 (defcustom store-folder "~/temp"
   "Directory to keep files with temporary buffers content."

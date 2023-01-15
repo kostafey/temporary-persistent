@@ -75,6 +75,6 @@ You can also change template for temporary buffer names:
 
 ## License
 
-Copyright © 2016 Kostafey <kostafey@gmail.com>
+Copyright © 2016-2023 Kostafey <kostafey@gmail.com>
 
 Distributed under the General Public License 3.0+
