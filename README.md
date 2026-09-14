@@ -1,4 +1,5 @@
-[![License GPL 3](https://img.shields.io/badge/license-GPL_3-green.svg)](http://www.gnu.org/licenses/gpl-3.0.txt)
+[![License GPL 3](https://img.shields.io/badge/license-GPL_3-green.svg)](LICENSE)
+[![MELPA](https://melpa.org/packages/temporary-persistent-badge.svg)](https://melpa.org/#/temporary-persistent)
 
 # temporary-persistent
 
@@ -83,4 +84,4 @@ You can also change template for temporary buffer names:
 
 Copyright © 2016-2026 Kostafey <kostafey@gmail.com>
 
-Distributed under the General Public License 3.0+
+Distributed under the General Public License 3.0+, see [LICENSE](LICENSE).
