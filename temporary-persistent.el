@@ -1,6 +1,6 @@
 ;;; temporary-persistent.el --- Keep temp notes buffers persistent -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2016-2023 Kostafey <kostafey@gmail.com>
+;; Copyright (C) 2016-2026 Kostafey <kostafey@gmail.com>
 
 ;; Author: Kostafey <kostafey@gmail.com>
 ;; URL: https://github.com/kostafey/temporary-persistent
@@ -45,8 +45,12 @@
 
 (define-namespace temporary-persistent-
 
-(defcustom default-submodes (list 'auto-fill-mode
-                                  'auto-complete-mode)
+(defcustom default-major-mode 'fundamental-mode
+  "New temp buffer `major-mode'."
+  :type 'symbol
+  :group 'temporary-persistent)
+
+(defcustom default-submodes (list 'auto-fill-mode)
   "List of submodes enabled in new temp buffer."
   :type 'list
   :group 'temporary-persistent)
@@ -96,6 +100,8 @@
         (progn
           (find-file temp-file-path)
           (rename-buffer temp-buffer-name)
+          (when (fboundp default-major-mode)
+            (funcall-interactively default-major-mode))
           (-map (lambda (mode)
                   (when (fboundp mode)
                     (funcall mode t)))

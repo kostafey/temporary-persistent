@@ -40,14 +40,20 @@ There are 3 cases Emacs save your temp buffer:
 * `kill-emacs`
 * Save buffer manually via ordinary `save-buffer` function.
 
+### Default major-mode
+
+Set default `major-mode` for new temp buffers:
+
+```lisp
+(setq temporary-persistent-default-major-mode 'markdown-mode)
+```
+
 ### Default submodes
 
 You can enable some submodes for new temp buffers by default:
 
 ```lisp
-(setq temporary-persistent-default-submodes (list 'linum-mode
-                                                  'auto-fill-mode
-                                                  'auto-complete-mode))
+(setq temporary-persistent-default-submodes (list 'auto-fill-mode))
 ```
 
 ### Directory to keep temporary buffers data
@@ -75,6 +81,6 @@ You can also change template for temporary buffer names:
 
 ## License
 
-Copyright © 2016-2023 Kostafey <kostafey@gmail.com>
+Copyright © 2016-2026 Kostafey <kostafey@gmail.com>
 
 Distributed under the General Public License 3.0+
