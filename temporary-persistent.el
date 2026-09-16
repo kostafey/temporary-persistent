@@ -31,6 +31,8 @@
 ;; associated to files and will be saved any time you run `kill-buffer' or
 ;; `kill-emacs'.
 ;; Furtermore, you can save them manually any time via `save-buffer' function.
+;; If `consult' is installed, `temporary-persistent-consult-switch-buffer'
+;; lists the temp buffers annotated with their contents summary.
 ;; See README.md for more information.
 
 ;;; Code:
@@ -38,6 +40,10 @@
 (require 's)
 (require 'dash)
 (require 'names)
+
+(declare-function consult-buffer "consult" (&optional sources))
+(declare-function consult--buffer-query "consult")
+(declare-function consult--buffer-state "consult")
 
 (defgroup temporary-persistent nil
   "Keep temp notes buffers persistent."
@@ -65,6 +71,16 @@
   :type 'string
   :group 'temporary-persistent)
 
+(defun buffer-name-regexp ()
+  "Return regexp matching temp buffers names.
+See `buffer-name-template'."
+  (concat "\\`\\*" (regexp-quote buffer-name-template) "\\(-[0-9]+\\)?\\*\\'"))
+
+(defun buffer-p (buffer)
+  "Return non-nil when BUFFER is a temp buffer."
+  (and (buffer-live-p buffer)
+       (string-match-p (buffer-name-regexp) (buffer-name buffer))))
+
 (defun save-and-kill-buffer ()
   "Save buffer contents and kill buffer."
   (save-buffer)
@@ -75,9 +91,7 @@
   "Save all buffers corresponding to `buffer-name-template'."
   (-map
    (lambda (buf)
-     (if (string-match
-          (concat "^\\*" buffer-name-template "\\(-[0-9]+\\)?" "\\*$" )
-          (buffer-name buf))
+     (if (buffer-p buf)
          (save-buffer buf)))
    (buffer-list)))
 
@@ -109,6 +123,125 @@
       (switch-to-buffer temp-buffer-name))
     (set (make-local-variable 'kill-buffer-query-functions)
          'temporary-persistent-save-and-kill-buffer)))
+
+
+;;; Buffer contents summary
+
+(defconst -markdown-heading-regexp "^#[ \t]+\\(.*?\\)[ \t]*#*[ \t]*$"
+  "Regexp matching the level 1 `markdown-mode' heading.")
+
+(defconst -org-title-regexp "^[ \t]*#\\+title:[ \t]*\\(.*?\\)[ \t]*$"
+  "Regexp matching the `org-mode' title keyword.")
+
+(defconst -org-heading-regexp "^\\*[ \t]+\\(.*?\\)[ \t]*$"
+  "Regexp matching the level 1 `org-mode' heading.")
+
+(defconst -non-blank-line-regexp "^[ \t]*\\([^ \t\n].*?\\)[ \t]*$"
+  "Regexp matching any non-blank line.")
+
+(defun -match-line (regexp)
+  "Return the first REGEXP match (group 1) in the current buffer.
+Return nil when there is no match or the matched text is blank."
+  (save-excursion
+    (save-restriction
+      (widen)
+      (goto-char (point-min))
+      (let ((case-fold-search t))
+        (when (re-search-forward regexp nil t)
+          (let ((line (s-trim (match-string-no-properties 1))))
+            (unless (s-blank? line) line)))))))
+
+(defun buffer-summary (buffer)
+  "Return one line describing the contents of BUFFER.
+It is the first level 1 heading for `markdown-mode' buffers, the
+`#+title:' keyword or, lacking it, the first level 1 heading for
+`org-mode' buffers.  In any other mode, or when no such heading is
+found, the first non-blank line of the buffer is returned."
+  (if (buffer-live-p buffer)
+      (with-current-buffer buffer
+        (or (cond
+             ((derived-mode-p 'markdown-mode)
+              (-match-line -markdown-heading-regexp))
+             ((derived-mode-p 'org-mode)
+              (or (-match-line -org-title-regexp)
+                  (-match-line -org-heading-regexp))))
+            (-match-line -non-blank-line-regexp)
+            ""))
+    ""))
+
+
+;;; `consult-buffer' integration
+
+(defcustom consult-mode-width 20
+  "Width of the `major-mode' column of `consult-switch-buffer'."
+  :type 'integer
+  :group 'temporary-persistent)
+
+(defcustom consult-summary-width 80
+  "Maximum width of the summary column of `consult-switch-buffer'."
+  :type 'integer
+  :group 'temporary-persistent)
+
+(defcustom consult-mode-face 'completions-annotations
+  "Face of the `major-mode' column of `consult-switch-buffer'."
+  :type 'face
+  :group 'temporary-persistent)
+
+(defcustom consult-summary-face 'completions-annotations
+  "Face of the summary column of `consult-switch-buffer'."
+  :type 'face
+  :group 'temporary-persistent)
+
+(defun -consult-items ()
+  "Return the list of temp buffers as `consult-buffer' candidates."
+  (consult--buffer-query
+   :sort 'visibility
+   :exclude nil
+   :include (list (buffer-name-regexp))
+   :as (lambda (buffer) (cons (buffer-name buffer) buffer))))
+
+(defun -consult-annotate (buffer)
+  "Annotate BUFFER with its `major-mode' and its contents summary.
+BUFFER is a buffer or a buffer name."
+  (let ((buffer (if (bufferp buffer) buffer (get-buffer buffer))))
+    (when (buffer-live-p buffer)
+      (concat
+       (propertize (truncate-string-to-width
+                    (format-mode-line 'mode-name nil nil buffer)
+                    consult-mode-width 0 ?\s t)
+                   'face consult-mode-face)
+       " "
+       (propertize (truncate-string-to-width
+                    (buffer-summary buffer)
+                    consult-summary-width 0 nil t)
+                   'face consult-summary-face)))))
+
+(defvar consult-source
+  (list :name     "Temp Buffer"
+        :narrow   ?t
+        :category 'temporary-persistent-buffer
+        :face     'consult-buffer
+        :history  'buffer-name-history
+        :state    #'consult--buffer-state
+        :annotate #'-consult-annotate
+        :items    #'-consult-items
+        :default  t)
+  "Temp buffers source for `consult-buffer'.
+Unlike `consult-source-buffer', it annotates the candidates with a
+summary of their contents instead of their file path, see
+`buffer-summary'.")
+
+:autoload
+(defun consult-switch-buffer ()
+  "Switch to a temp buffer, selecting it with `consult-buffer'.
+Every candidate is annotated with its `major-mode' and a summary of
+its contents, see `buffer-summary'."
+  (interactive)
+  (unless (require 'consult nil t)
+    (user-error "The `consult' package is not available"))
+  (unless (-consult-items)
+    (user-error "No temp buffer to switch to"))
+  (consult-buffer (list consult-source)))
 )
 
 (add-hook 'kill-emacs-hook 'temporary-persistent-save-all-related-buffers)

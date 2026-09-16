@@ -41,6 +41,46 @@ There are 3 cases Emacs save your temp buffer:
 * `kill-emacs`
 * Save buffer manually via ordinary `save-buffer` function.
 
+### Switch to temp buffer with `consult`
+
+If [consult](https://github.com/minad/consult) is installed, there is one more
+way to switch to a temp buffer: `temporary-persistent-consult-switch-buffer`.
+It lists the live temp buffers via `consult-buffer`, but the third column of
+the annotation shows a summary of the buffer contents instead of its file path:
+
+* `markdown-mode` buffers: the text of the first level 1 heading (`#`),
+* `org-mode` buffers: the `#+title:` value, or the text of the first level 1
+  heading (`*`) if there is no `#+title:`,
+* any other mode, or no such heading found: the first non-blank line.
+
+```lisp
+(global-set-key (kbd "C-x C-t") 'temporary-persistent-consult-switch-buffer)
+```
+
+The completion source itself is available as
+`temporary-persistent-consult-source`, so it can be added to the usual
+`consult-buffer` list as well (narrowing key <kbd>t</kbd>):
+
+```lisp
+(add-to-list 'consult-buffer-sources 'temporary-persistent-consult-source t)
+```
+
+Note that temp buffers belong to the standard `Buffer` source as well, so they
+are listed twice then.  To keep the annotated entries only, hide them from the
+standard source (the regexp follows `temporary-persistent-buffer-name-template`):
+
+```lisp
+(add-to-list 'consult-buffer-filter "\\`\\*temp\\(-[0-9]+\\)?\\*\\'")
+```
+
+`temporary-persistent-consult-source` ignores `consult-buffer-filter`, so
+`temporary-persistent-consult-switch-buffer` still lists all the temp buffers.
+
+The columns can be adjusted with `temporary-persistent-consult-mode-width`,
+`temporary-persistent-consult-summary-width`,
+`temporary-persistent-consult-mode-face` and
+`temporary-persistent-consult-summary-face`.
+
 ### Default major-mode
 
 Set default `major-mode` for new temp buffers:
@@ -79,6 +119,8 @@ You can also change template for temporary buffer names:
 * [names](https://github.com/Malabarba/names).
 * [dash.el](https://github.com/magnars/dash.el).
 * [s.el](https://github.com/magnars/s.el).
+* [consult](https://github.com/minad/consult) (optional, for
+  `temporary-persistent-consult-switch-buffer`).
 
 ## License
 
