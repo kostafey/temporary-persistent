@@ -45,13 +45,19 @@ There are 3 cases Emacs save your temp buffer:
 
 If [consult](https://github.com/minad/consult) is installed, there is one more
 way to switch to a temp buffer: `temporary-persistent-consult-switch-buffer`.
-It lists the live temp buffers via `consult-buffer`, but the third column of
-the annotation shows a summary of the buffer contents instead of its file path:
+It lists the live temp buffers via `consult-buffer`, showing a summary of the
+buffer contents next to the buffer name instead of its file path:
 
 * `markdown-mode` buffers: the text of the first level 1 heading (`#`),
 * `org-mode` buffers: the `#+title:` value, or the text of the first level 1
   heading (`*`) if there is no `#+title:`,
 * any other mode, or no such heading found: the first non-blank line.
+
+The summary is part of the completion candidate, not of its annotation, so
+what you type narrows the list by the buffer name and by the summary alike:
+`weekly` finds `*temp-12*` when it starts with `#+title: Weekly plan`, and
+`12` still finds it by name.  The `major-mode` is shown as the annotation and
+is not matched against.
 
 ```lisp
 (global-set-key (kbd "C-x C-t") 'temporary-persistent-consult-switch-buffer)

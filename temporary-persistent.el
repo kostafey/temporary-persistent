@@ -32,7 +32,8 @@
 ;; `kill-emacs'.
 ;; Furtermore, you can save them manually any time via `save-buffer' function.
 ;; If `consult' is installed, `temporary-persistent-consult-switch-buffer'
-;; lists the temp buffers annotated with their contents summary.
+;; lists the temp buffers along with their contents summary, which the
+;; completion input narrows by as well as by the buffer name.
 ;; See README.md for more information.
 
 ;;; Code:
@@ -192,50 +193,69 @@ found, the first non-blank line of the buffer is returned."
   :type 'face
   :group 'temporary-persistent)
 
+(defvar consult-history nil
+  "Completion history of `consult-switch-buffer'.")
+
+(defun -consult-candidate (buffer width)
+  "Return the `consult-buffer' completion string of BUFFER.
+It is the name of BUFFER, padded to WIDTH columns, followed by the
+summary of its contents, see `buffer-summary'."
+  (let ((name (buffer-name buffer))
+        (summary (buffer-summary buffer)))
+    (if (s-blank? summary)
+        name
+      (concat (truncate-string-to-width name width 0 ?\s)
+              " "
+              (propertize (truncate-string-to-width
+                           summary consult-summary-width 0 nil t)
+                          'face consult-summary-face)))))
+
 (defun -consult-items ()
-  "Return the list of temp buffers as `consult-buffer' candidates."
-  (consult--buffer-query
-   :sort 'visibility
-   :exclude nil
-   :include (list (buffer-name-regexp))
-   :as (lambda (buffer) (cons (buffer-name buffer) buffer))))
+  "Return the list of temp buffers as `consult-buffer' candidates.
+Every candidate is a pair of its completion string, see
+`-consult-candidate', and the buffer itself.  The completion string
+holds the buffer name as well as the summary of the buffer contents,
+so the `consult-buffer' input narrows the list by both of them."
+  (let* ((buffers (consult--buffer-query
+                   :sort 'visibility
+                   :exclude nil
+                   :include (list (buffer-name-regexp))))
+         (width (--reduce-from (max acc (string-width (buffer-name it)))
+                               0 buffers)))
+    (--map (cons (-consult-candidate it width) it) buffers)))
 
 (defun -consult-annotate (buffer)
-  "Annotate BUFFER with its `major-mode' and its contents summary.
+  "Annotate BUFFER with its `major-mode'.
 BUFFER is a buffer or a buffer name."
   (let ((buffer (if (bufferp buffer) buffer (get-buffer buffer))))
     (when (buffer-live-p buffer)
-      (concat
-       (propertize (truncate-string-to-width
-                    (format-mode-line 'mode-name nil nil buffer)
-                    consult-mode-width 0 ?\s t)
-                   'face consult-mode-face)
-       " "
-       (propertize (truncate-string-to-width
-                    (buffer-summary buffer)
-                    consult-summary-width 0 nil t)
-                   'face consult-summary-face)))))
+      (propertize (truncate-string-to-width
+                   (format-mode-line 'mode-name nil nil buffer)
+                   consult-mode-width 0 nil t)
+                  'face consult-mode-face))))
 
 (defvar consult-source
   (list :name     "Temp Buffer"
         :narrow   ?t
         :category 'temporary-persistent-buffer
         :face     'consult-buffer
-        :history  'buffer-name-history
+        :history  'temporary-persistent-consult-history
         :state    #'consult--buffer-state
         :annotate #'-consult-annotate
         :items    #'-consult-items
         :default  t)
   "Temp buffers source for `consult-buffer'.
-Unlike `consult-source-buffer', it annotates the candidates with a
-summary of their contents instead of their file path, see
-`buffer-summary'.")
+Unlike `consult-source-buffer', the candidates carry a summary of
+their contents instead of their file path, see `buffer-summary', and
+the completion input narrows them by their name and by their summary
+alike.")
 
 :autoload
 (defun consult-switch-buffer ()
   "Switch to a temp buffer, selecting it with `consult-buffer'.
-Every candidate is annotated with its `major-mode' and a summary of
-its contents, see `buffer-summary'."
+Every candidate carries a summary of its contents, see
+`buffer-summary', and is annotated with its `major-mode'.  Typing
+narrows the list by the buffer name and by the summary alike."
   (interactive)
   (unless (require 'consult nil t)
     (user-error "The `consult' package is not available"))
